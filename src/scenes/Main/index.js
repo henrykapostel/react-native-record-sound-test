@@ -49,7 +49,8 @@ export class MainScene extends Component {
     this._checkPermission().then((hasPermission) => {
       this.setState({ hasPermission });
       if (!hasPermission) return;
-      this.prepareRecordingPath(this.state.audioPath);
+      const audioPath = this.getCurrentDate();
+      this.prepareRecordingPath(audioPath);
       AudioRecorder.onProgress = (data) => {
         this.setState({ currentTime: Math.floor(data.currentTime) });
       };
@@ -59,8 +60,15 @@ export class MainScene extends Component {
           this._finishRecording(data.status === 'OK', data.audioFileURL);
         }
       };
+      this.setState({ audioPath });
     });
   }
+  getCurrentDate = () => {
+    const date = new Date;
+    const currentDate = `${date.getUTCDay()}${date.getUTCMonth()}`;
+    const currentTime = `${date.getUTCHours()}${date.getUTCMinutes()}${date.getUTCSeconds()}`;
+    return AudioUtils.DocumentDirectoryPath + `/${currentDate}${currentTime}.aac`;
+  };
   prepareRecordingPath = (audioPath) => {
     AudioRecorder.prepareRecordingAtPath(audioPath, {
       SampleRate: 22050,
@@ -149,7 +157,9 @@ export class MainScene extends Component {
       return;
     }
     if (this.state.stoppedRecording) {
-      this.prepareRecordingPath(this.state.audioPath);
+      const audioPath = this.getCurrentDate();
+      this.prepareRecordingPath(audioPath);
+      this.setState({ audioPath });
     }
     this.setState({ recording: true });
     try {
